@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
+use App\Models\Asistencia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
+
 class UserController extends Controller
 {
     /**
@@ -12,6 +15,8 @@ class UserController extends Controller
     public function index()
     {
         //
+        $asistencias = Asistencia::with('user')->get();
+        return response()->json(['asistencias' => $asistencias]);
         
         $users = User::where('asistencia', '1')->get();
         return response()->json(['users' => $users]);
@@ -33,46 +38,41 @@ class UserController extends Controller
         //
         try {
             $request->validate([
-                'nombres' => 'required|string|max:100',
-                'apellidos' => 'required|string|max:100',
-                'dni' => 'required|string|size:8|unique:users',
-                'gerencia' => 'required|string|max:100',
-                'cargo' => 'required|max:50',
-                'genero' => 'required|string|max:50',
-                'rol' => 'string|max:255',
+                'nombres' => 'required|string|max:30',
+                'apellidos' => 'required|string|max:30',
+                'dni' => 'required|string|max:15',
+                // 'provincia' => 'required',
             ], [
                 'nombres.required' => 'El campo nombres es obligatorio.',
-                'nombres.max' => 'El campo nombres no debe exceder los 100 caracteres.',
+                'nombres.max' => 'El campo nombres no debe exceder los 30 caracteres.',
                 'apellidos.required' => 'El campo apellidos es obligatorio.',
-                'apellidos.max' => 'El campo apellidos no debe exceder los 100 caracteres.',
+                'apellidos.max' => 'El campo apellidos no debe exceder los 30 caracteres.',
                 'dni.required' => 'El campo DNI es obligatorio.',
                 'dni.size' => 'El campo DNI debe tener 8 caracteres.',
-                'dni.unique' => 'El DNI ya está en uso.',
-                'gerencia.required' => 'El campo gerencia es obligatorio.',
-                'gerencia.max' => 'El campo gerencia no debe exceder los 100 caracteres.',
-                'cargo.required' => 'El campo cargo es obligatorio.',
-                'cargo.max' => 'El campo cargo no debe exceder los 50 caracteres.',
-                'genero.required' => 'El campo género es obligatorio.',
-                'genero.max' => 'El campo género no debe exceder los 50 caracteres.',
-                'rol.max' => 'El campo rol no debe exceder los 255 caracteres.'
+                // 'dni.unique' => 'El DNI ya está en uso.',
+                // 'provincia.required' => 'El campo provincia es obligatorio.',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
         }   
         
+        $usuarioExistente = User::where('dni', $request->dni)->first();
+
+        if ($usuarioExistente) {
+            return response()->json(['message' => 'El DNI ya está en uso', 'id'=> $usuarioExistente->id], 409);
+        }
+
         $user = User::create([
             'nombres' => $request->nombres,
             'apellidos' => $request->apellidos,
             'dni' => $request->dni,
-            'gerencia' => $request->gerencia,
+            'provincia' => $request->provincia,
+            'empresa' => $request->empresa,
+            'rubro' => $request->rubro,
             'cargo' => $request->cargo,
-            'genero' => $request->genero,
-            'email' => $request->email,
             'rol' => $request->rol ?? 'user',
             'password' => Hash::make($request->password),
         ]);
-        //loguear al usuario
-        // Auth::login($user);
 
         // Return a JSON response with a success message
         return response()->json(['message' => 'Persona registrada correctamente', 'id' => $user->id], 201);
@@ -118,9 +118,22 @@ class UserController extends Controller
         $user = User::where('dni', $dni)->first();
 
         if ($user) {
-            if ($user->asistencia == 1) {
-                return response()->json(['message' => 'Usuario ya fue registrado']);
-            }
+            // if ($user->asistencia == 1) {
+            //     return response()->json(['message' => 'Usuario ya fue registrado']);
+            // }
+            $today = Carbon::today();
+
+            // $asistenciaHoy = Asistencia::where('user_id', $user->id)
+            // ->whereDate('created_at', $today)
+            // ->first();
+
+            // if ($asistenciaHoy) {
+            //     return response()->json(['message' => 'Asistencia ya registrada hoy', 'user' => $user]);
+            // }
+
+            Asistencia::create([
+                'user_id' => $user->id,
+            ]);
 
             $user->update(['asistencia' => 1]);
             return response()->json(['message' => 'Asistencia registrada correctamente', 'user' => $user]);
@@ -141,8 +154,10 @@ class UserController extends Controller
 
     public function list()
     {
-        $users = User::where('asistencia','1');
-        return response()->json(['users' => $users]);
+        $asistencias = Asistencia::with('user')->get();
+        return response()->json(['asistencias' => $asistencias]);
+        // $users = User::where('asistencia','1');
+        // return response()->json(['users' => $users]);
     }
 
     

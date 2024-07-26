@@ -21,10 +21,11 @@ class User extends Authenticatable
         'nombres',
         'apellidos',
         'dni',
-        'gerencia',
+        'provincia',
+        'empresa',
+        'rubro',
         'cargo',
         'asistencia',
-        'genero',
         'rol',
     ];
 
@@ -46,4 +47,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function asistencias()
+    {
+        return $this->hasMany(Asistencia::class);
+    }
 }
