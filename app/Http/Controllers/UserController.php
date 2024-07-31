@@ -40,17 +40,21 @@ class UserController extends Controller
             $request->validate([
                 'nombres' => 'required|string|max:30',
                 'apellidos' => 'required|string|max:30',
-                'dni' => 'required|string|max:15',
-                // 'provincia' => 'required',
+                'dni' => 'required|string|min:7|max:15',
+                'provincia' => 'required',
+                'empresa' => 'required',
+                
             ], [
                 'nombres.required' => 'El campo nombres es obligatorio.',
                 'nombres.max' => 'El campo nombres no debe exceder los 30 caracteres.',
                 'apellidos.required' => 'El campo apellidos es obligatorio.',
                 'apellidos.max' => 'El campo apellidos no debe exceder los 30 caracteres.',
                 'dni.required' => 'El campo DNI es obligatorio.',
-                'dni.size' => 'El campo DNI debe tener 8 caracteres.',
+                'dni.min' => 'El campo DNI debe tener mínimo 7 caracteres.',
+                'dni.max' => 'El campo DNI debe tener máximo 15 caracteres.',
                 // 'dni.unique' => 'El DNI ya está en uso.',
-                // 'provincia.required' => 'El campo provincia es obligatorio.',
+                'provincia.required' => 'El campo provincia es obligatorio.',
+                'empresa.required' => 'El campo empresa es obligatorio.',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['errors' => $e->errors()], 422);
@@ -74,7 +78,6 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Return a JSON response with a success message
         return response()->json(['message' => 'Persona registrada correctamente', 'id' => $user->id], 201);
     }
 

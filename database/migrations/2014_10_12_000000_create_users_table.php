@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('nombres',30);
             $table->string('apellidos',30);
             $table->string('dni',15)->unique();
-            $table->string('provincia',20)->nullable();;
-            $table->string('empresa',50)->nullable();
+            $table->string('provincia',30);
+            $table->string('empresa',70)->nullable();
             $table->string('rubro',70)->nullable();
-            $table->string('cargo',30)->nullable();
+            $table->string('cargo',70)->nullable();
             $table->boolean('asistencia')->default(0);
             $table->string('rol')->default('user');
             $table->rememberToken();
