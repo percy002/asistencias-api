@@ -15,11 +15,29 @@ class UserController extends Controller
     public function index()
     {
         //
-        $asistencias = Asistencia::with('user')->get();
-        return response()->json(['asistencias' => $asistencias]);
         
-        $users = User::where('asistencia', '1')->get();
-        return response()->json(['users' => $users]);
+        $fechaFiltro = Carbon::create(2024, 8, 1);
+
+        $asistenciasDia1 = Asistencia::with('user')
+            ->whereDate('created_at', $fechaFiltro)
+            ->get();
+
+        $asistenciasDia2 = Asistencia::with('user')
+            ->whereDate('created_at', Carbon::create(2023, 8, 2))
+            ->get();
+
+        $asistenciasDia3 = Asistencia::with('user')
+            ->whereDate('created_at', Carbon::create(2023, 8, 3))
+            ->get();
+
+        return response()->json([
+            'asistencias1' => $asistenciasDia1,
+            'asistencias2' => $asistenciasDia2,
+            'asistencias3' => $asistenciasDia3,
+        ]);
+        
+        // $users = User::where('asistencia', '1')->get();
+        // return response()->json(['users' => $users]);
     }
 
     /**
